@@ -6,7 +6,6 @@ import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.*;
 import static java.lang.Character.isLetter;
@@ -34,7 +33,7 @@ public class TestFrame extends JFrame implements ActionListener {
 /* ########## ########## ########## ########## ##########  */ 
 /* ## TAG BORT kommentarna på de 2 följande raderna när ni skrivit era samlingar */
 		containerSLC   = new SLCWithGet<TestMapWithCounter.TestMapEntry<String, List<Integer>>>(),
-		containerSplay = new SplayWithGet<TestMapWithCounter.TestMapEntry<String, List<Integer>>>(),
+		containerSplay = new SplayTreeWithGet<TestMapWithCounter.TestMapEntry<String, List<Integer>>>(),
 		containerBST   = new BSTwithGet<TestMapWithCounter.TestMapEntry<String, List<Integer>>>(),
 		containerAVL   = new AVLwithGet<TestMapWithCounter.TestMapEntry<String, List<Integer>>>();
 
@@ -193,6 +192,7 @@ public class TestFrame extends JFrame implements ActionListener {
 			} 
 			catch( NullPointerException ex) { 
 				listModel.addElement("NO Collection implemented");
+				ex.printStackTrace();
 			}
 		}
 	}
