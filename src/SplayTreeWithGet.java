@@ -1,10 +1,6 @@
 
 public class SplayTreeWithGet<E extends Comparable<? super E>> extends BinarySearchTree<E> implements CollectionWithGet<E> {
 
-    public SplayTreeWithGet() {
-        super();
-    }
-
     /* Rotera 1 steg i hogervarv, dvs
           x'                 y'
          / \                / \
@@ -169,15 +165,24 @@ public class SplayTreeWithGet<E extends Comparable<? super E>> extends BinarySea
     }
 
     /**
-     * Balances a selected part of the tree. Making the entry node reach the targeted level.
-     * @param entry The entry that is suppose to become root of part tree.
-     * @param target The target root of the part of the tree that is to be balanced.
+     * The last entry that was reached by find.
      */
-    private void balance(Entry entry, Entry target) {
-        Entry next;
-        while (entry != null && entry.parent != null && entry != target) {
+    private Entry lastFound;
+
+    public SplayTreeWithGet() {
+        super();
+        lastFound = null;
+    }
+
+    /**
+     * Balances a selected part of the tree. Making the entry node reach the targeted level.
+     */
+    private void splay(final Entry toMove) {
+        Entry entry, next;
+        entry = toMove;
+        while (entry != null && entry.parent != null) {
             if (entry.parent.left == entry) {
-                if (entry.parent.parent != null && entry.parent != target) {
+                if (entry.parent.parent != null) {
                     next = entry.parent.parent;
                     if (next.left == entry.parent)
                         zigzig(next);
@@ -188,7 +193,7 @@ public class SplayTreeWithGet<E extends Comparable<? super E>> extends BinarySea
                     zig(next);
                 }
             } else {
-                if (entry.parent.parent != null && entry.parent != target) {
+                if (entry.parent.parent != null) {
                     next = entry.parent.parent;
                     if (next.right == entry.parent)
                         zagzag(next);
@@ -204,38 +209,32 @@ public class SplayTreeWithGet<E extends Comparable<? super E>> extends BinarySea
     }
 
     /**
-     * Tries to find the given element from the given entry and balancing the tree in the process.
+     * Tries to find the given element from the given entry and splaying the tree in the process.
+     * It will save the last reached entry in the private variable lastFound.
+     *
      * @param e The dummy element to compare to.
      * @param t The root which to search from.
      * @return The matching tree element.
      */
     @Override
     protected Entry find(E e, Entry t) {
-        Entry entry = super.find(e, t);
-        this.balance(entry, t);
-        return entry == null ? null : t;
-    }
-
-    /**
-     * Tries to add an element.
-     * @param e The element to add to the tree.
-     * @return true if the element is added to the tree.
-     */
-    @Override
-    public boolean add(E e) {
-        if (e == null)
-            throw new NullPointerException("Can not add null as element");
-        return super.add(e);
+        if (t != null && (t.left == null || t.right == null))
+            lastFound = t;
+        return super.find(e, t);
     }
 
     /**
      * Returns an element from the tree matching the dummy element.
+     * Splays the tree afterwards.
      * @param e The dummy element to compare to.
      * @return The matching tree element.
      */
     @Override
     public E get(E e) {
-        Entry entry = this.find(e, super.root);
-        return entry == null ? null : entry.element;
+        Entry entry;
+        entry = this.find(e, root);
+        E rv = entry == null ? null : entry.element;
+        splay(lastFound);
+        return rv;
     }
 }

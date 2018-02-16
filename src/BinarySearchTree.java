@@ -658,7 +658,7 @@ public class BinarySearchTree<E extends Comparable<? super E>>
 		st.add(130);
 		st.add(160);
 		st.add(180);
-		
+
 		System.out.println("Tree before:");
 		System.out.println(st);
 	
