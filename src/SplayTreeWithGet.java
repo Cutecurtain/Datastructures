@@ -1,6 +1,3 @@
-import com.sun.xml.internal.messaging.saaj.soap.impl.TreeException;
-
-import java.util.Stack;
 
 public class SplayTreeWithGet<E extends Comparable<? super E>> extends BinarySearchTree<E> implements CollectionWithGet<E> {
 
@@ -208,9 +205,9 @@ public class SplayTreeWithGet<E extends Comparable<? super E>> extends BinarySea
 
     /**
      * Tries to find the given element from the given entry and balancing the tree in the process.
-     * @param e The element to find.
+     * @param e The dummy element to compare to.
      * @param t The root which to search from.
-     * @return
+     * @return The matching tree element.
      */
     @Override
     protected Entry find(E e, Entry t) {
