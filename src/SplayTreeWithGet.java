@@ -182,24 +182,24 @@ public class SplayTreeWithGet<E extends Comparable<? super E>> extends BinarySea
             if (entry.parent.left == entry) {
                 if (entry.parent.parent != null && entry.parent != target) {
                     next = entry.parent.parent;
-                    if (entry.parent.parent.left == entry.parent)
-                        zigzig(entry.parent.parent);
+                    if (next.left == entry.parent)
+                        zigzig(next);
                     else
-                        zagzig(entry.parent.parent);
+                        zagzig(next);
                 } else {
                     next = entry.parent;
-                    zig(entry.parent);
+                    zig(next);
                 }
             } else {
                 if (entry.parent.parent != null && entry.parent != target) {
                     next = entry.parent.parent;
-                    if (entry.parent.parent.right == entry.parent)
-                        zagzag(entry.parent.parent);
+                    if (next.right == entry.parent)
+                        zagzag(next);
                     else
-                        zigzag(entry.parent.parent);
+                        zigzag(next);
                 } else {
                     next = entry.parent;
-                    zag(entry.parent);
+                    zag(next);
                 }
             }
             entry = next;
