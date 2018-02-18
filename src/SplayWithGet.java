@@ -1,4 +1,3 @@
-import java.util.Stack;
 
 public class SplayWithGet<E extends Comparable<? super E>> extends BinarySearchTree<E> implements CollectionWithGet<E> {
 
@@ -113,23 +112,25 @@ public class SplayWithGet<E extends Comparable<? super E>> extends BinarySearchT
          D   C                 B   A
     */
     private void zigzig(Entry x) {
-        Entry y = x.left;
-        Entry z = y.left;
-        Entry B = y.right;
-        Entry C = z.right;
-
-        y.right = x;
-        z.right = y;
-        y.left = C;
-        x.left = B;
-
-        z.parent = x.parent;
-        x.parent = y;
-        y.parent = z;
-
-        E temp = x.element;
+        Entry y = x.left,
+                z = x.left.left;
+        E e = x.element;
         x.element = z.element;
-        z.element = temp;
+        z.element = e;
+        y.left = z.right;
+        if (y.left != null)
+            y.left.parent = y;
+        x.left = z.left;
+        if (x.left != null)
+            x.left.parent = x;
+        z.left = y.right;
+        if (z.left != null)
+            z.left.parent = z;
+        z.right = x.right;
+        if (z.right != null)
+            z.right.parent = z;
+        x.right = y;
+        y.right = z;
     }
 
     /*
@@ -142,80 +143,100 @@ public class SplayWithGet<E extends Comparable<? super E>> extends BinarySearchT
           C   D       A   B
      */
     private void zagzag(Entry x) {
-        Entry y = x.right;
-        Entry z = y.right;
-        Entry B = y.left;
-        Entry C = z.left;
-
-        x.right = B;
-        y.right = C;
-        y.left = x;
-        z.left = y;
-
-        z.parent = x.parent;
-        x.parent = y;
-        y.parent = z;
-
-        E temp = x.element;
+        Entry y = x.right,
+                z = x.right.right;
+        E e = x.element;
         x.element = z.element;
-        z.element = temp;
+        z.element = e;
+        y.right = z.left;
+        if (y.right != null)
+            y.right.parent = y;
+        x.right = z.right;
+        if (x.right != null)
+            x.right.parent = x;
+        z.left = x.left;
+        if (z.left != null)
+            z.left.parent = z;
+        z.right = y.left;
+        if (z.right != null)
+            z.right.parent = z;
+        x.left = y;
+        y.left = z;
     }
 
+    public SplayWithGet() {
+        super();
+    }
 
-    private void balance(Entry entry) {
-        Entry temp = entry;
-        Stack<Integer> directions = new Stack<>();
-        while (temp.parent != null) {
-            if (temp == temp.parent.left) {
-                directions.push(0);
-            } else {
-                directions.push(1);
-            }
-            temp = temp.parent;
-        }
-        while (!directions.empty()) {
-            int dir1 = directions.pop();
-            entry = entry.parent;
-            if (!directions.empty()) {
-                entry = entry.parent;
-                int dir2 = directions.pop();
-                if (dir1 == dir2) {
-                    if (dir1 == 0)
-                        zigzig(entry.left);
+    /**
+     * Splays a selected part of the tree. Making the entry node reach the targeted level.
+     */
+    private void splay(Entry toMove) {
+        Entry entry, next;
+        entry = toMove;
+        while (entry != null && entry.parent != null) {
+            if (entry.parent.left == entry) {
+                if (entry.parent.parent != null) {
+                    next = entry.parent.parent;
+                    if (next.left == entry.parent)
+                        zigzig(next);
                     else
-                        zagzag(entry.right);
+                        zagzig(next);
                 } else {
-                    if (dir1 == 0)
-                        zagzig(entry.left);
-                    else
-                        zigzag(entry.right);
+                    next = entry.parent;
+                    zig(next);
                 }
             } else {
-                if (dir1 == 0)
-                    zig(entry.left);
-                else
-                    zag(entry.right);
+                if (entry.parent.parent != null) {
+                    next = entry.parent.parent;
+                    if (next.right == entry.parent)
+                        zagzag(next);
+                    else
+                        zigzag(next);
+                } else {
+                    next = entry.parent;
+                    zag(next);
+                }
             }
+            entry = next;
         }
     }
 
-    private void insert(E e) {
-        Entry entry = super.find(e, super.root);
-        if (entry == null)
-            super.add(e);
-        balance(entry);
+    /**
+     * Tries to find the given element from the given entry and splaying the tree in the process.
+     * It will save the last reached entry in the private variable lastFound.
+     * @param elem The dummy element to compare to.
+     * @param t    The root which to search from.
+     * @return The matching tree element.
+     */
+    @Override
+    protected Entry find(E elem, Entry t) {
+        if (t == null)
+            return null;
+        int jfr = elem.compareTo(t.element);
+        if (jfr < 0) {
+            if (t.left == null)
+                splay(t);
+            return find(elem, t.left);
+        } else if (jfr > 0) {
+            if (t.right == null)
+                splay(t);
+            return find(elem, t.right);
+        }
+        splay(t);
+        return t;
     }
 
+    /**
+     * Returns an element from the tree matching the dummy element.
+     * @param elem The dummy element to compare to.
+     * @return The matching tree element.
+     */
     @Override
-    public boolean add(E e) {
-        if (e == null)
-            throw new NullPointerException();
-        insert(e);
-        return true;
-    }
-
-    @Override
-    public E get(E e) {
-        return super.find(e, super.root).element;
+    public E get(E elem) {
+        if (elem == null)
+            throw new NullPointerException("Can not search for null!");
+        Entry entry = find(elem, root);
+        return entry == null ? null : entry.element;
     }
 }
