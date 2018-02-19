@@ -171,7 +171,7 @@ public class SplayWithGet<E extends Comparable<? super E>> extends BinarySearchT
     /**
      * Splays a selected part of the tree. Making the entry node reach the targeted level.
      */
-    private void splay(Entry toMove) {
+    private void splay(final Entry toMove) {
         Entry entry, next;
         entry = toMove;
         while (entry != null && entry.parent != null) {
@@ -213,18 +213,25 @@ public class SplayWithGet<E extends Comparable<? super E>> extends BinarySearchT
     protected Entry find(E elem, Entry t) {
         if (t == null)
             return null;
-        int jfr = elem.compareTo(t.element);
-        if (jfr < 0) {
-            if (t.left == null)
-                splay(t);
-            return find(elem, t.left);
-        } else if (jfr > 0) {
-            if (t.right == null)
-                splay(t);
-            return find(elem, t.right);
+        boolean foundIt = false;
+        Entry entry = t;
+        while (true) {
+            int jfr = elem.compareTo(entry.element);
+            if (jfr < 0) {
+                if (entry.left == null)
+                    break;
+                entry = entry.left;
+            } else if (jfr > 0) {
+                if (entry.right == null)
+                    break;
+                entry = entry.right;
+            } else {
+                foundIt = true;
+                break;
+            }
         }
-        splay(t);
-        return t;
+        splay(entry);
+        return foundIt ? root : null;
     }
 
     /**
@@ -236,7 +243,7 @@ public class SplayWithGet<E extends Comparable<? super E>> extends BinarySearchT
     public E get(E elem) {
         if (elem == null)
             throw new NullPointerException("Can not search for null!");
-        Entry entry = find(elem, root);
+        Entry entry = this.find(elem, root);
         return entry == null ? null : entry.element;
     }
 }
