@@ -5,35 +5,13 @@ public class CompDijkstraPath {
     private CompDijkstraPath() {
     }
 
-    public static <E extends Edge> Iterator<E> dijkstra(List<E> graph, int start, int stop) {
-        List<QueueElement<E>> elements = generateQueueElements(graph, start);
-        Queue<QueueElement<E>> pQueue = new PriorityQueue<>();
-        pQueue.add(new QueueElement<>(start, 0, new ArrayList<>()));
-        while (!pQueue.isEmpty()) {
-            QueueElement<E> qe = pQueue.poll();
-            if (!qe.isVisited()) {
-                if (qe.getNode() == stop)
-                    return qe.getPath().iterator();
-                qe.visit();
-                Stack<QueueElement<E>> rStack = new Stack<>();
-                for (QueueElement<E> adjacent : elements) {
-                    if (!adjacent.isVisited()) {
-                        E temp = adjacent.getPath().get(adjacent.getPath().size() - 1);
-                        if (temp.getSource() == qe.getNode()) {
-                            adjacent.getPath().clear();
-                            adjacent.getPath().addAll(qe.getPath());
-                            adjacent.getPath().add(temp);
-                            adjacent.setCost(qe.getCost() + adjacent.getCost());
-                            pQueue.add(adjacent);
-                            rStack.push(adjacent);
-                        }
-                    }
-                }
-                for (QueueElement<E> rElement : rStack)
-                    elements.remove(rElement);
-            }
+    private static <E extends Edge> List<QueueElement<E>> getAdjacent(List<QueueElement<E>> elements, int from) {
+        List<QueueElement<E>> adjacents = new ArrayList<>();
+        for (QueueElement<E> queueElement : elements) {
+            if (queueElement.getPath().get(queueElement.getPath().size() - 1).getSource() == from)
+                adjacents.add(queueElement);
         }
-        return null;
+        return adjacents;
     }
 
     private static <E extends Edge> List<QueueElement<E>> generateQueueElements(List<E> graph, int from) {
@@ -45,13 +23,43 @@ public class CompDijkstraPath {
         return elements;
     }
 
+    public static <E extends Edge> Iterator<E> dijkstra(List<E> graph, int start, int stop) {
+        List<QueueElement<E>> elements = generateQueueElements(graph, start);
+        Queue<QueueElement<E>> pQueue = new PriorityQueue<>();
+        pQueue.add(new QueueElement<>(start, 0, new ArrayList<>()));
+        while (!pQueue.isEmpty()) {
+            QueueElement<E> qe = pQueue.poll();
+            //if (!qe.isVisited()) {
+                if (qe.getNode() == stop)
+                    return qe.getPath().iterator();
+                //qe.visit();
+                int prev = qe.getPath().size() == 0 ? -1 : qe.getPath().get(qe.getPath().size() - 1).getSource();
+                Stack<QueueElement<E>> rStack = new Stack<>();
+                for (QueueElement<E> adjacent : elements) {
+                    E lastEdge = adjacent.getPath().get(adjacent.getPath().size() - 1);
+                    if (lastEdge.getSource() == qe.getNode() && adjacent.getNode() != prev) {
+                        adjacent.getPath().clear();
+                        adjacent.getPath().addAll(qe.getPath());
+                        adjacent.getPath().add(lastEdge);
+                        adjacent.setCost(qe.getCost() + adjacent.getCost());
+                        pQueue.add(adjacent);
+                        rStack.push(adjacent);
+                    }
+                }
+                for (QueueElement<E> rElement : rStack)
+                    elements.remove(rElement);
+            //}
+        }
+        return null;
+    }
+
     private static class QueueElement<E extends Edge> implements Comparable<QueueElement> {
 
         private int node;
         private double cost;
         private List<E> path;
 
-        private boolean visited;
+        //private boolean visited;
 
         /**
          * Initializes a QueueElement.
@@ -64,7 +72,7 @@ public class CompDijkstraPath {
             this.node = node;
             this.cost = cost;
             this.path = path;
-            visited = false;
+            //visited = false;
         }
 
         QueueElement(int node, double cost, E edge) {
@@ -90,13 +98,13 @@ public class CompDijkstraPath {
             return path;
         }
 
-        boolean isVisited() {
+        /*boolean isVisited() {
             return visited;
         }
 
         void visit() {
             visited = true;
-        }
+        }*/
 
         @Override
         public int compareTo(QueueElement queueElement) {
