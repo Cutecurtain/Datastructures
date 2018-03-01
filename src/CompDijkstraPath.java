@@ -28,7 +28,8 @@ public class CompDijkstraPath {
      * @param stop The node that is to be reached.
      * @return An iterator containing the path from 'start' to 'stop'.
      */
-    private static <E extends Edge> Iterator<E> findShortestPath(List<QueueElement<E>> elements, Queue<QueueElement<E>> pq, int stop) {
+    private static <E extends Edge> Iterator<E> findShortestPath(List<QueueElement<E>> elements,
+                                                                 Queue<QueueElement<E>> pq, int stop) {
         while (!pq.isEmpty()) {
             QueueElement<E> qe = pq.poll();
             if (qe.getNode() == stop)
@@ -40,7 +41,7 @@ public class CompDijkstraPath {
             // A remove list. Will be filled with the queue elements that have been reached.
             List<QueueElement<E>> rl = new ArrayList<>();
 
-            // Find the neighboring queue elements and add them to the path.
+            // Find the neighboring queue elements and add them to the path and add them to the remove list.
             for (QueueElement<E> v : elements) {
                 E lastEdge = v.getPath().get(v.getPath().size() - 1);
                 if (lastEdge.getSource() == qe.getNode() && v.getNode() != prev) {
@@ -73,9 +74,15 @@ public class CompDijkstraPath {
     public static <E extends Edge> Iterator<E> dijkstra(List<E> graph, int start, int stop) {
         if (graph == null)
             return null;
+
+        // Generate a list of queue elements from the graph's edges.
         List<QueueElement<E>> elements = generateQueueElements(graph, start);
+
+        // Create and add the start node to a priority list.
         Queue<QueueElement<E>> pq = new PriorityQueue<>();
         pq.add(new QueueElement<>(start, 0, new ArrayList<>()));
+
+        // Find the shortest path and return the iterator.
         return findShortestPath(elements, pq, stop);
     }
 
@@ -112,8 +119,8 @@ public class CompDijkstraPath {
         QueueElement(int node, double cost, E edge) {
             this.node = node;
             this.cost = cost;
-            path = new ArrayList<>();
-            path.add(edge);
+            this.path = new ArrayList<>();
+            this.path.add(edge);
         }
 
         void setCost(double cost) {
@@ -121,25 +128,34 @@ public class CompDijkstraPath {
         }
 
         int getNode() {
-            return node;
+            return this.node;
         }
 
         double getCost() {
-            return cost;
+            return this.cost;
         }
 
         List<E> getPath() {
-            return path;
+            return this.path;
         }
 
         /**
-         * A simple compareTo method, just sending the request to Double.compare().
-         * @param queueElement
+         * Sending the request to Double.compare().
+         * If the cost is the same for both queue elements, then the method
+         * will compare the amount of edges in the paths instead.
+         * @param queueElement The element to compare to.
          * @return -1 if smaller cost. 0 if equal cost. 1 if bigger cost.
          */
         @Override
         public int compareTo(QueueElement queueElement) {
-            return Double.compare(cost, queueElement.getCost());
+            int result = Double.compare(this.cost, queueElement.getCost());
+            if (result == 0) {
+                int size = this.path.size();
+                int qSize = queueElement.getPath().size();
+                if (size != qSize)
+                    return size < qSize ? -1 : 1;
+            }
+            return result;
         }
     }
 
