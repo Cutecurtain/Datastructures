@@ -24,18 +24,23 @@ public class CompDijkstraPath {
     /**
      * The Dijkstra algorithm given by the class notes of class 11 from the course website.
      * @param elements The previously generated queue elements.
-     * @param pq
-     * @param stop
-     * @param <E>
-     * @return
+     * @param pq The priority queue that the current paths will be placed in.
+     * @param stop The node that is to be reached.
+     * @return An iterator containing the path from 'start' to 'stop'.
      */
     private static <E extends Edge> Iterator<E> findShortestPath(List<QueueElement<E>> elements, Queue<QueueElement<E>> pq, int stop) {
         while (!pq.isEmpty()) {
             QueueElement<E> qe = pq.poll();
             if (qe.getNode() == stop)
                 return qe.getPath().iterator();
+
+            // The previously reached node in this path.
             int prev = qe.getPath().size() == 0 ? -1 : qe.getPath().get(qe.getPath().size() - 1).getSource();
-            Stack<QueueElement<E>> rs = new Stack<>();
+
+            // A remove list. Will be filled with the queue elements that have been reached.
+            List<QueueElement<E>> rl = new ArrayList<>();
+
+            // Find the neighboring queue elements and add them to the path.
             for (QueueElement<E> v : elements) {
                 E lastEdge = v.getPath().get(v.getPath().size() - 1);
                 if (lastEdge.getSource() == qe.getNode() && v.getNode() != prev) {
@@ -44,17 +49,30 @@ public class CompDijkstraPath {
                     v.getPath().add(lastEdge);
                     v.setCost(qe.getCost() + v.getCost());
                     pq.add(v);
-                    rs.push(v);
+                    rl.add(v);
                 }
             }
-            for (QueueElement<E> re : rs)
+
+            // Remove the neighboring queue elements from the element list,
+            // so that they are not compared to again.
+            for (QueueElement<E> re : rl)
                 elements.remove(re);
         }
         return null;
     }
 
-
+    /**
+     * Initializes the list of queue elements and the priority queue.
+     * Adds the start node to the priority queue.
+     * Then call and return iterator from the method findShortestPath().
+     * @param graph The graph of edges the user gives.
+     * @param start The node where the path starts.
+     * @param stop The node that is to be reached.
+     * @return An iterator containing the path from 'start' to 'stop'.
+     */
     public static <E extends Edge> Iterator<E> dijkstra(List<E> graph, int start, int stop) {
+        if (graph == null)
+            return null;
         List<QueueElement<E>> elements = generateQueueElements(graph, start);
         Queue<QueueElement<E>> pq = new PriorityQueue<>();
         pq.add(new QueueElement<>(start, 0, new ArrayList<>()));

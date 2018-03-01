@@ -43,33 +43,51 @@ public class CompKruskalEdge {
             E e = pq.poll();
             int source = e.getSource(), dest = e.getDest();
             if (cc[source] != cc[dest]) {
+                // Choose the smaller list.
                 int min = source < dest ? source : dest;
+
+                // Choose the bigger list.
                 int max = source + dest - min;
+
+                // Adjust the references for all the affected nodes.
                 rePoint(cc, max, min);
+
+                // Add the next edge to the current list.
                 cc[max].add(e);
+
                 length--;
             }
         }
     }
 
     /**
-     *
-     * @param graph
-     * @param noOfNodes
-     * @param <E>
-     * @return
+     * Initialize fields and priority queue. Then call and return iterator from
+     * the method findMinimumSpanningTree().
+     * @param graph The graph of edges the user gives.
+     * @param noOfNodes The number of nodes in the graph.
+     * @return An iterator containing the minimum spanning tree.
      */
     public static <E extends Edge> Iterator<E> kruskal(List<E> graph, int noOfNodes) {
         if (graph == null || noOfNodes <= 0)
             return null;
+
+        // Generate a field of lists for each node.
         List<E>[] cc = generateEdgeField(noOfNodes);
+
+        // Add all edges to a priority queue.
         Queue<E> pq = new PriorityQueue<>(new EdgeComparator<E>());
         pq.addAll(graph);
+
+        // Find the minimum spanning tree.
         findMininumSpanningTree(cc, pq);
+
+        // Return the iterator for the minimum spanning tree.
         return cc[0].iterator();
     }
 
     private static class EdgeComparator<E extends Edge> implements Comparator<E> {
+
+        private EdgeComparator() {}
 
         /**
          * A simple compare method, just sending the request to Double.compare().
