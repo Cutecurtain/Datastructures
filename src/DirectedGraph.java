@@ -213,7 +213,7 @@ public class DirectedGraph<E extends Edge> {
 		// Append elements from the list in 'from' to the list in 'to'.
 		cc[to].addAll(cc[from]);
 
-		// Make every affected node reference the to list.
+		// Make every affected node reference the 'to' list.
 		for (E edge : cc[from]) {
 			cc[edge.getSource()] = cc[to];
 			cc[edge.getDest()] = cc[to];
