@@ -87,8 +87,6 @@ public class CompKruskalEdge {
 
     private static class EdgeComparator<E extends Edge> implements Comparator<E> {
 
-        private EdgeComparator() {}
-
         /**
          * A simple compare method, just sending the request to Double.compare().
          * @param e An edge.
