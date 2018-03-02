@@ -38,7 +38,9 @@ public class CompDijkstraPath {
             // The previously reached node in this path.
             int prev = qe.getPath().size() == 0 ? -1 : qe.getPath().get(qe.getPath().size() - 1).getSource();
 
-            // A remove list. Will be filled with the queue elements that have been reached.
+            /* A remove list. Will be filled with the queue elements that have been reached.
+             * Basically to make sure we don't visit any already visited elements.
+             */
             List<QueueElement<E>> rl = new ArrayList<>();
 
             // Find the neighboring queue elements and add them to the path and add them to the remove list.

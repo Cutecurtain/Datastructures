@@ -38,7 +38,7 @@ public class CompKruskalEdge {
      * @param cc The field of all list references for each of the nodes.
      * @param pq The priority queue that contains all the edges from the graph.
      */
-    private static <E extends Edge> void findMininumSpanningTree(List<E>[] cc, Queue<E> pq) {
+    private static <E extends Edge> void findMinimumSpanningTree(List<E>[] cc, Queue<E> pq) {
         for (int length = cc.length; !pq.isEmpty() && length > 1;) {
             E e = pq.poll();
             int source = e.getSource(), dest = e.getDest();
@@ -79,7 +79,7 @@ public class CompKruskalEdge {
         pq.addAll(graph);
 
         // Find the minimum spanning tree.
-        findMininumSpanningTree(cc, pq);
+        findMinimumSpanningTree(cc, pq);
 
         // Return the iterator for the minimum spanning tree.
         return cc[0].iterator();
