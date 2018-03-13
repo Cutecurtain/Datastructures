@@ -20,7 +20,7 @@ public class DirectedGraph<E extends Edge> {
 	}
 		
 	public Iterator<E> minimumSpanningTree() {
-		return DirectedGraph.kruskal(edges, noOfNodes);
+		return this.kruskal(edges, noOfNodes);
 	}
 
 
@@ -114,15 +114,15 @@ public class DirectedGraph<E extends Edge> {
 	 * @param noOfNodes The number of nodes in the graph.
 	 * @return An iterator containing the minimum spanning tree.
 	 */
-	public static <E extends Edge> Iterator<E> kruskal(List<E> graph, int noOfNodes) {
-		if (graph == null || noOfNodes <= 0)
+	private Iterator<E> kruskal(List<E> graph, int noOfNodes) {
+		if (graph == null || noOfNodes < 0)
 			return null;
 
 		// Generate a field of lists for each node.
 		List<E>[] cc = generateEdgeField(noOfNodes);
 
 		// Add all edges to a priority queue.
-		Queue<E> pq = new PriorityQueue<>(new EdgeComparator<E>());
+		Queue<E> pq = new PriorityQueue<>(new EdgeComparator());
 		pq.addAll(graph);
 
 		// Find the minimum spanning tree.
@@ -137,9 +137,10 @@ public class DirectedGraph<E extends Edge> {
 	 * @param cc The field of all list references for each of the nodes.
 	 * @param pq The priority queue that contains all the edges from the graph.
 	 */
-	private static <E extends Edge> void findMinimumSpanningTree(List<E>[] cc, Queue<E> pq) {
+	private void findMinimumSpanningTree(List<E>[] cc, Queue<E> pq) {
 
-		for (int length = cc.length; !pq.isEmpty() && length > 1;) {
+		int length = cc.length;
+		while (!pq.isEmpty() && length > 1) {
 
 			// Grab the next cheapest edge from the priority queue.
 			E e = pq.poll();
@@ -151,10 +152,10 @@ public class DirectedGraph<E extends Edge> {
 			// If the source and destination nodes does not reference the same list.
 			if (cc[source] != cc[dest]) {
 
-				// Choose the smaller list.
+				// Get the index for the list that has least nodes in it (out of the two given).
 				int minIndex = source < dest ? source : dest;
 
-				// Choose the bigger list.
+				// Get the index for the list that has most nodes in it (out of the two given).
 				int maxIndex = source + dest - minIndex;
 
 				// Adjust the references for all the affected nodes.
@@ -176,12 +177,10 @@ public class DirectedGraph<E extends Edge> {
 	 * @param to The list that the affected nodes should reference.
 	 * @param from The list with all the nodes that is affected.
 	 */
-	private static <E extends Edge> void rePoint(List<E>[] cc, int to, int from) {
-		// Append elements from the list in 'from' to the list in 'to'.
-		cc[to].addAll(cc[from]);
-
+	private void rePoint(List<E>[] cc, int to, int from) {
 		// Make every affected node reference the 'to' list.
 		for (E edge : cc[from]) {
+			cc[to].add(edge);
 			cc[edge.getSource()] = cc[to];
 			cc[edge.getDest()] = cc[to];
 		}
@@ -193,7 +192,7 @@ public class DirectedGraph<E extends Edge> {
 	 * @param noOfNodes The size the requested field.
 	 * @return The field.
 	 */
-	private static <E extends Edge> List<E>[] generateEdgeField(int noOfNodes) {
+	private List<E>[] generateEdgeField(int noOfNodes) {
 		// Create a array with lists for every node.
 		List<E>[] cc = new List[noOfNodes];
 		for (int i = 0; i < noOfNodes; i++)
@@ -201,7 +200,7 @@ public class DirectedGraph<E extends Edge> {
 		return cc;
 	}
 
-	private static class EdgeComparator<E extends Edge> implements Comparator<E> {
+	private class EdgeComparator implements Comparator<E> {
 
 		/**
 		 * A simple compare method, just sending the request to Double.compare().
