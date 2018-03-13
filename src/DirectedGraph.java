@@ -16,7 +16,7 @@ public class DirectedGraph<E extends Edge> {
 	}
 
 	public Iterator<E> shortestPath(int from, int to) {
-		return DirectedGraph.dijkstra(edges, from, to);
+		return this.dijkstra(edges, from, to);
 	}
 		
 	public Iterator<E> minimumSpanningTree() {
@@ -29,110 +29,73 @@ public class DirectedGraph<E extends Edge> {
 
 
 	/**
-	 * Initializes the list of queue elements and the priority queue.
-	 * Adds the start node to the priority queue.
+	 * Adds the from node to the priority queue.
 	 * Then call and return iterator from the method findShortestPath().
 	 * @param graph The graph of edges the user gives.
-	 * @param start The node where the path starts.
-	 * @param stop The node that is to be reached.
-	 * @return An iterator containing the path from 'start' to 'stop'.
+	 * @param from The node where the path starts.
+	 * @param to The node that is to be reached.
+	 * @return An iterator containing the path from 'from' to 'to'.
 	 */
-	public static <E extends Edge> Iterator<E> dijkstra(List<E> graph, int start, int stop) {
+	private Iterator<E> dijkstra(List<E> graph, int from, int to) {
 		if (graph == null)
 			return null;
 
-		// Generate a list of queue elements from the graph's edges.
-		List<DijkstraPath<E>> elements = generateQueueElements(graph, start);
-
-		// Create and add the start node to a priority list.
+		// Create and add the from node to a priority queue.
 		Queue<DijkstraPath<E>> pq = new PriorityQueue<>();
-		pq.add(new DijkstraPath<>(start, 0, new ArrayList<>()));
+		pq.add(new DijkstraPath<>(from, 0, new ArrayList<>()));
 
 		// Find the shortest path and return the iterator.
-		return findShortestPath(elements, pq, stop);
+		return findShortestPath(graph, pq, to);
 	}
 
 	/**
 	 * The Dijkstra algorithm given by the class notes of class 11 from the course website.
-	 * @param elements The previously generated queue elements.
+	 * @param graph The entire graph.
 	 * @param pq The priority queue that the current paths will be placed in.
 	 * @param stop The node that is to be reached.
 	 * @return An iterator containing the path from 'start' to 'stop'.
 	 */
-	private static <E extends Edge> Iterator<E> findShortestPath(List<DijkstraPath<E>> elements,
-																 Queue<DijkstraPath<E>> pq, int stop) {
-		while (!pq.isEmpty()) {
+	private Iterator<E> findShortestPath(List<E> graph, Queue<DijkstraPath<E>> pq, int stop) {
+		// To be filled with the nodes we will visit.
+		Set<Integer> visited = new HashSet<>();
 
+		while (!pq.isEmpty()) {
 			// Get next shortest path from the priority queue.
 			DijkstraPath<E> qe = pq.poll();
+
+			// Just in case something somehow went wrong.
+			while (visited.contains(qe.getNode()))
+				qe = pq.poll();
 
 			// If we have reached the goal node. Then return the path.
 			if (qe.getNode() == stop)
 				return qe.getPath().iterator();
 
-			// The previous node in this path.
-			int prev = -1;
-			int size = qe.getPath().size();
-			if (size != 0)
-				prev = qe.getPath().get(size - 1).getSource();
+			// Visit this node.
+			visited.add(qe.getNode());
 
-			/* A remove list. Will be filled with the queue elements that have been reached.
-			 * Basically to make sure we don't visit any already visited elements.
-			 */
-			List<DijkstraPath<E>> visited = new ArrayList<>();
+			// Find the neighboring queue elements and add them to the path.
+			for (E nextEdge : graph) {
 
-			// Find the neighboring queue elements and add them to the path and add them to the remove list.
-			for (DijkstraPath<E> nextNode : elements) {
+				// If the source in this edge is the same as the node we are currently on and its
+				// destination has not been visited.
+				if (nextEdge.getSource() == qe.getNode() && !visited.contains(nextEdge.getDest())) {
 
-				// The edge that leads to the next node.
-				E lastEdge = nextNode.getPath().get(nextNode.getPath().size() - 1);
+					// Create a new path to the next node.
+					List<E> newPath = new ArrayList<>(qe.getPath());
+					newPath.add(nextEdge);
 
-				// If the last node in this edge is the same as the one we are currently on (i.e this edge is connected
-				// to the node we are on) and it is not the previous node that lead us here.
-				if (lastEdge.getSource() == qe.getNode() && nextNode.getNode() != prev) {
-
-					// Remove the previous way to the found node.
-					nextNode.getPath().clear();
-
-					// Give it the path to the node we are on.
-					nextNode.getPath().addAll(qe.getPath());
-
-					// Add the new edge, so that the path leads to the new node.
-					nextNode.getPath().add(lastEdge);
-
-					// Update the cost of traveling to the new node.
-					nextNode.setCost(qe.getCost() + nextNode.getCost());
+					// Create a new DijkstraPath to the next node.
+					DijkstraPath<E> newDijkstraPath = new DijkstraPath<>(nextEdge.getDest(),
+																		qe.getCost() + nextEdge.getWeight(),
+																		newPath);
 
 					// Add to the priority queue as a potential path.
-					pq.add(nextNode);
-
-					// Add to the visited list. We have now visited this node.
-					visited.add(nextNode);
+					pq.add(newDijkstraPath);
 				}
 			}
-
-			// Remove the visited queue elements from the element list,
-			// so that they are not compared to again.
-			for (DijkstraPath<E> re : visited)
-				elements.remove(re);
 		}
 		return null;
-	}
-
-	/**
-	 * Generates a list of queue element from a list of edges given from the user.
-	 * All edges will be turned into queue element except the edges leading to the start.
-	 * @param graph The graph containing edges to create queue elements.
-	 * @param start Where the path starts.
-	 * @return The list with the queue elements generated from the graph.
-	 */
-	private static <E extends Edge> List<DijkstraPath<E>> generateQueueElements(List<E> graph, int start) {
-		List<DijkstraPath<E>> elements = new ArrayList<>();
-		for (E edge : graph) {
-			if (edge.to != start)
-				elements.add(new DijkstraPath<>(edge.to, edge.getWeight(), edge));
-		}
-		return elements;
 	}
 
 

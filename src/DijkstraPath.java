@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.List;
 
 public class DijkstraPath<E extends Edge> implements Comparable<DijkstraPath> {
@@ -12,6 +11,9 @@ public class DijkstraPath<E extends Edge> implements Comparable<DijkstraPath> {
     // The path to reach the node.
     private List<E> path;
 
+    // Empty constructor.
+    DijkstraPath() {}
+
     /**
      * Initializes a DijkstraPath.
      * @param node The node that has been reached.
@@ -24,21 +26,16 @@ public class DijkstraPath<E extends Edge> implements Comparable<DijkstraPath> {
         this.path = path;
     }
 
-    /**
-     * Initializes a DijkstraPath.
-     * @param node The node that has been reached.
-     * @param cost The cost of getting here from the start node.
-     * @param edge The edge to the node.
-     */
-    DijkstraPath(int node, double cost, E edge) {
+    void setNode(int node) {
         this.node = node;
-        this.cost = cost;
-        this.path = new ArrayList<>();
-        this.path.add(edge);
     }
 
     void setCost(double cost) {
         this.cost = cost;
+    }
+
+    void setPath(List<E> path) {
+        this.path = path;
     }
 
     int getNode() {
