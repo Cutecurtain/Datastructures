@@ -38,7 +38,11 @@ public class DirectedGraph<E extends Edge> {
 	 */
 	private Iterator<E> dijkstra(List<E> graph, int from, int to) {
 		if (graph == null)
-			return null;
+			throw new NullPointerException("No graph given!");
+		else if (from < 0 || from > this.noOfNodes - 1)
+			throw new IndexOutOfBoundsException("Node " + from + " does not exist!");
+		else if (to < 0 || to > this.noOfNodes - 1)
+			throw new IndexOutOfBoundsException("Node " + to + " does not exist!");
 
 		// Create and add the from node to a priority queue.
 		Queue<DijkstraPath<E>> pq = new PriorityQueue<>();
